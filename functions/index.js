@@ -83,17 +83,17 @@ exports.anyadirMensajeCGuemes = onRequest(async (request, response) => {
 
  exports.anyadirFechaMensajeCGuemes = onDocumentCreated("mensajes/{id}", (event) => {
 
-    const titulo = event.data.ref.titulo;
-    const cuerpo = event.data.ref.cuerpo;
+    const titulo = event.data.data().titulo;
+    const cuerpo = event.data.data().cuerpo;
 
-    const fecha = new Timestamp();
+    const fecha = Timestamp.now();
 
 
-    return event.data.ref.set(
-      titulo = titulo,
-      cuerpo = cuerpo,
-      fecha = fecha
-    );
+    return event.data.ref.set({
+        titulo: titulo,
+        cuerpo: cuerpo,
+        fecha: fecha
+    }, {merge: true});
 
  });
 
