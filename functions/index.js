@@ -32,6 +32,30 @@ exports.anyadirMensajeCGuemes = onRequest(async (request, response) => {
 
     const idMensaje = anyadeMensaje.id;
 
-    response.json({result: `Mensaje añadido con ID: ${idMensaje}`});
+    response.json({result: ` Mensaje añadido con ID: ${idMensaje}`});
  });
+
+
+ exports.eliminarMensajeCGuemes = onRequest(async (request, response) => {
+    const id = request.query.id;
+
+    const referenciaMensaje = await getFirestore()
+        .collection("mensajes")
+        .doc(id);
+
+    const mensajeDoc = await referenciaMensaje.get();
+    const existe = mensajeDoc.exists;
+    if (!existe) {
+        response.status(404).json({ error: "Mensaje no encontrado." });
+        return;
+    }
+
+    else{
+        await referenciaMensaje.delete();
+        response.json({result: `Mensaje con ID ${id} eliminado correctamente`});
+    }
+
+ });
+
+
 
