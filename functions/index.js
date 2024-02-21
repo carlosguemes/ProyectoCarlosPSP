@@ -12,6 +12,7 @@ const logger = require("firebase-functions/logger");
 const { initializeApp } = require ("firebase-admin/app");
 const { Firestore, getFirestore } = require("firebase-admin/firestore"); 
 
+
 initializeApp();
 
 // Create and deploy your first functions
@@ -57,5 +58,21 @@ exports.anyadirMensajeCGuemes = onRequest(async (request, response) => {
 
  });
 
+ exports.listarMensajesCGuemes = onRequest(async (request, response) => {
 
+    const arrayMensajes = [];
+    var i = 0;
+
+    const listaMensajes = await getFirestore()
+        .collection("mensajes")
+        .get();
+
+        listaMensajes.forEach(doc => {
+            arrayMensajes[i] = ` Mensaje ${(i+1)}  ->   Titulo: ` + 
+            doc.data().titulo + `, Cuerpo: ` + doc.data().cuerpo;
+            i++;
+        });
+
+    response.json({result: ` Mensajes en la base de datos: ${arrayMensajes}`});
+ });
 
