@@ -11,7 +11,7 @@ const {onRequest} = require("firebase-functions/v2/https");
 const logger = require("firebase-functions/logger");
 const { initializeApp } = require ("firebase-admin/app");
 const { Firestore, getFirestore, Timestamp } = require("firebase-admin/firestore"); 
-const { onDocumentCreated } = require("firebase-functions/v2/firestore");
+const { onDocumentCreated, onDocumentDeleted } = require("firebase-functions/v2/firestore");
 const { event } = require("firebase-functions/v1/analytics");
 
 
@@ -97,3 +97,29 @@ exports.anyadirMensajeCGuemes = onRequest(async (request, response) => {
 
  });
 
+
+exports.anyadirFechaBorradoMensajeCGuemes = onDocumentDeleted("mensajes/{id}", (event) => {
+
+    const titulo = event.data.data().titulo;
+    const cuerpo = event.data.data().cuerpo;
+
+    const fecha = Timestamp.now();
+
+
+    // Obtener la referencia al documento borrado
+    const documentoBorradoRef = event.data.ref;
+
+    // Obtener el ID del documento borrado
+    const idDocumentoBorrado = documentoBorradoRef.id;
+
+    // Crear una referencia para el nuevo documento en la carpeta "Archivo"
+    const nuevoDocumentoRef = documentoBorradoRef.firestore.collection("Archivo").doc(idDocumentoBorrado);
+
+    // Guardar los datos en el nuevo documento en la carpeta "Archivo"
+    return nuevoDocumentoRef.set({
+        titulo: titulo,
+        cuerpo: cuerpo,
+        fecha: fecha
+    }, {merge: true});
+
+ });
