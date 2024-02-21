@@ -10,7 +10,9 @@
 const {onRequest} = require("firebase-functions/v2/https");
 const logger = require("firebase-functions/logger");
 const { initializeApp } = require ("firebase-admin/app");
-const { Firestore, getFirestore } = require("firebase-admin/firestore"); 
+const { Firestore, getFirestore, Timestamp } = require("firebase-admin/firestore"); 
+const { onDocumentCreated } = require("firebase-functions/v2/firestore");
+const { event } = require("firebase-functions/v1/analytics");
 
 
 initializeApp();
@@ -27,6 +29,7 @@ exports.anyadirMensajeCGuemes = onRequest(async (request, response) => {
     const titulo = request.query.titulo;
     const cuerpo = request.query.cuerpo;
 
+
     const anyadeMensaje = await getFirestore()
         .collection("mensajes")
         .add({titulo: titulo, cuerpo: cuerpo});
@@ -37,6 +40,7 @@ exports.anyadirMensajeCGuemes = onRequest(async (request, response) => {
  });
 
 
+ //Hay que pasar el ID del menssaje por parametro en la URL
  exports.eliminarMensajeCGuemes = onRequest(async (request, response) => {
     const id = request.query.id;
 
@@ -74,5 +78,22 @@ exports.anyadirMensajeCGuemes = onRequest(async (request, response) => {
         });
 
     response.json({result: ` Mensajes en la base de datos: ${arrayMensajes}`});
+ });
+
+
+ exports.anyadirFechaMensajeCGuemes = onDocumentCreated("mensajes/{id}", (event) => {
+
+    const titulo = event.data.ref.titulo;
+    const cuerpo = event.data.ref.cuerpo;
+
+    const fecha = new Timestamp();
+
+
+    return event.data.ref.set(
+      titulo = titulo,
+      cuerpo = cuerpo,
+      fecha = fecha
+    );
+
  });
 
