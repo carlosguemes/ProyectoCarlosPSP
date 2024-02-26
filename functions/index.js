@@ -29,11 +29,12 @@ exports.anyadirMensajeCGuemes = onRequest(async (request, response) => {
     const titulo = request.query.titulo;
     const cuerpo = request.query.cuerpo;
 
-
+    //Añadir los mensajes a la colección de mensajes en Firebase
     const anyadeMensaje = await getFirestore()
         .collection("mensajes")
         .add({titulo: titulo, cuerpo: cuerpo});
 
+    //Obtener el id del mensaje
     const idMensaje = anyadeMensaje.id;
 
     response.json({result: ` Mensaje añadido con ID: ${idMensaje}`});
@@ -42,13 +43,18 @@ exports.anyadirMensajeCGuemes = onRequest(async (request, response) => {
 
  //Hay que pasar el ID del menssaje por parametro en la URL
  exports.eliminarMensajeCGuemes = onRequest(async (request, response) => {
+    //Obtener el id del mensaje
     const id = request.query.id;
 
+    //Obtener la referencia del mensaje de Firebase a través del id
     const referenciaMensaje = await getFirestore()
         .collection("mensajes")
         .doc(id);
 
+    //Obtener el mensaje a través de la referencia
     const mensajeDoc = await referenciaMensaje.get();
+
+    //Comprobamos si existe el mensaje
     const existe = mensajeDoc.exists;
     if (!existe) {
         response.status(404).json({ error: "Mensaje no encontrado." });
@@ -67,10 +73,12 @@ exports.anyadirMensajeCGuemes = onRequest(async (request, response) => {
     const arrayMensajes = [];
     var i = 0;
 
+    //Obtener los mensajes de la base de datos de Firebase
     const listaMensajes = await getFirestore()
         .collection("mensajes")
         .get();
 
+        //Guardar los mensajes en un array para devolverlos en un JSON
         listaMensajes.forEach(doc => {
             arrayMensajes[i] = ` Mensaje ${(i+1)}  ->   Titulo: ` + 
             doc.data().titulo + `, Cuerpo: ` + doc.data().cuerpo;
@@ -82,8 +90,11 @@ exports.anyadirMensajeCGuemes = onRequest(async (request, response) => {
 
 
  exports.anyadirFechaMensajeCGuemes = onDocumentCreated("mensajes/{id}", (event) => {
+    
+    //Obtener la fecha del momento actual
     const fecha = Timestamp.now();
 
+    //Setear la fecha en el mensaje
     return event.data.ref.set({
         fecha: fecha
     }, {merge: true});
@@ -99,16 +110,16 @@ exports.anyadirFechaBorradoMensajeCGuemes = onDocumentDeleted("mensajes/{id}", (
     const fecha = Timestamp.now();
 
 
-    // Obtener la referencia al documento borrado
+    //Obtener la referencia al documento borrado
     const documentoBorradoRef = event.data.ref;
 
-    // Obtener el ID del documento borrado
+    //Obtener el ID del documento borrado
     const idDocumentoBorrado = documentoBorradoRef.id;
 
-    // Crear una referencia para el nuevo documento en la carpeta "Archivo"
+    //Crear una referencia para el nuevo documento en la carpeta Archivo
     const nuevoDocumentoRef = documentoBorradoRef.firestore.collection("Archivo").doc(idDocumentoBorrado);
 
-    // Guardar los datos en el nuevo documento en la carpeta "Archivo"
+    // Guardar los datos en el nuevo documento en la carpeta Archivo
     return nuevoDocumentoRef.set({
         titulo: titulo,
         cuerpo: cuerpo,
